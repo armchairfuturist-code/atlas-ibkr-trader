@@ -1,0 +1,2 @@
+ERROR: live mode blocked: only paper mode allows submission
+Exit code: 1

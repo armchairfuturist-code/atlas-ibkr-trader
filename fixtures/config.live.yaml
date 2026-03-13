@@ -1,0 +1,10 @@
+mode: live
+risk_limits:
+  max_gross_leverage: 1.25
+  max_position_pct: 12.5
+  max_sector_pct: 30.0
+  daily_loss_stop_pct: 2.5
+ibkr_host: 127.0.0.1
+ibkr_port: 7496
+ibkr_client_id: 1
+require_human_approval: true

@@ -1,0 +1,5 @@
+Config validated successfully
+Mode: paper
+Paper lock enabled: True
+Risk limits: gross=1.25x, position=12.5%, sector=30.0%, daily_stop=2.5%
+Exit code: 0
