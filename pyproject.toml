@@ -1,0 +1,24 @@
+[project]
+name = "atlas-ibkr-trader"
+version = "0.1.0"
+description = "IBKR Paper ETF/Sector Margin Trading Planner"
+requires-python = ">=3.11"
+dependencies = [
+    "ib-insync>=0.9.85",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "pytest>=7.0",
+]
+
+[project.scripts]
+atlas-run = "app.pipeline.run_daily:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-q"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

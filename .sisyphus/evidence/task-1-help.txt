@@ -1,0 +1,14 @@
+<frozen runpy>:128: RuntimeWarning: 'app.pipeline.run_daily' found in sys.modules after import of package 'app.pipeline', but prior to execution of 'app.pipeline.run_daily'; this may result in unpredictable behaviour
+usage: python.exe -m app.pipeline.run_daily [-h] [--mode {paper,live}]
+                                            [--fixture FIXTURE]
+                                            [--stage STAGE]
+
+Atlas IBKR Paper Trading Pipeline
+
+options:
+  -h, --help           show this help message and exit
+  --mode {paper,live}  Execution mode (paper or live)
+  --fixture FIXTURE    Path to market data fixture file (JSON/YAML)
+  --stage STAGE        Run up to specific stage (pre_exec, risk, approval,
+                       submit)
+Exit code: 0
