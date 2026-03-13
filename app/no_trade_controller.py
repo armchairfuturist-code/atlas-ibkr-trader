@@ -1,5 +1,5 @@
 """Stale/missing data fail-closed and no-trade controller."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -12,7 +12,7 @@ class NoTradeDecision:
     should_trade: bool = False
     reason_code: str = ""
     reason: str = ""
-    timestamp: datetime = None
+    timestamp: Optional[datetime] = None
     
     def __post_init__(self):
         if self.timestamp is None:
