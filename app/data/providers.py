@@ -98,6 +98,18 @@ def create_fresh_fixture() -> dict[str, Quote]:
             ticker="QQQ", bid=420.00, ask=420.05, last=420.02,
             volume=40000000, timestamp=datetime.now()
         ),
+        "XLF": Quote(
+            ticker="XLF", bid=40.00, ask=40.05, last=40.02,
+            volume=25000000, timestamp=datetime.now()
+        ),
+        "XLK": Quote(
+            ticker="XLK", bid=200.00, ask=200.10, last=200.05,
+            volume=20000000, timestamp=datetime.now()
+        ),
+        "XLE": Quote(
+            ticker="XLE", bid=85.00, ask=85.05, last=85.02,
+            volume=15000000, timestamp=datetime.now()
+        ),
     }
 
 

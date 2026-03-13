@@ -44,7 +44,7 @@ class DailyPipeline:
     6. Submit: Submit to IBKR paper
     """
     
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = "fixtures/config.paper.yaml"):
         # Load config
         self.config = load_config_from_file(config_path)
         
@@ -62,7 +62,7 @@ class DailyPipeline:
         self.no_trade_controller = NoTradeController(self.data_provider)
         
         # Orchestrator
-        self.orchestrator = SignalOrchestrator(self.config, self.universe)
+        self.orchestrator = SignalOrchestrator(self.universe, self.config)
         
         # Portfolio state
         self.portfolio = PortfolioState()
