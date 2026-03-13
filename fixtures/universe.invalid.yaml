@@ -1,0 +1,10 @@
+---
+version: "1.0"
+etfs:
+  # Invalid: stock instead of ETF
+  - ticker: AAPL
+    name: Apple Inc
+    etf_type: stock
+    primary_sector: technology
+    leverage_factor: 1.0
+    min_adverage_volume: 50000000

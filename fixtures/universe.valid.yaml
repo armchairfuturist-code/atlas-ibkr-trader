@@ -1,0 +1,97 @@
+---
+version: "1.0"
+etfs:
+  # Broad Market (unlevered)
+  - ticker: SPY
+    name: SPDR S&P 500 ETF
+    etf_type: unlevered
+    primary_sector: broad_market
+    leverage_factor: 1.0
+    min_adverage_volume: 80000000
+  
+  - ticker: QQQ
+    name: Invesco QQQ Trust
+    etf_type: unlevered
+    primary_sector: technology
+    leverage_factor: 1.0
+    min_adverage_volume: 40000000
+  
+  - ticker: VTI
+    name: Vanguard Total Stock Market ETF
+    etf_type: unlevered
+    primary_sector: broad_market
+    leverage_factor: 1.0
+    min_adverage_volume: 5000000
+
+  # Sector ETFs (unlevered)
+  - ticker: XLF
+    name: Financial Select Sector SPDR
+    etf_type: unlevered
+    primary_sector: financials
+    leverage_factor: 1.0
+    min_adverage_volume: 25000000
+  
+  - ticker: XLK
+    name: Technology Select Sector SPDR
+    etf_type: unlevered
+    primary_sector: technology
+    leverage_factor: 1.0
+    min_adverage_volume: 20000000
+  
+  - ticker: XLE
+    name: Energy Select Sector SPDR
+    etf_type: unlevered
+    primary_sector: energy
+    leverage_factor: 1.0
+    min_adverage_volume: 15000000
+  
+  - ticker: XLV
+    name: Health Care Select Sector SPDR
+    etf_type: unlevered
+    primary_sector: healthcare
+    leverage_factor: 1.0
+    min_adverage_volume: 12000000
+  
+  - ticker: XLI
+    name: Industrial Select Sector SPDR
+    etf_type: unlevered
+    primary_sector: industrials
+    leverage_factor: 1.0
+    min_adverage_volume: 10000000
+  
+  - ticker: XLC
+    name: Communication Services Select Sector SPDR
+    etf_type: unlevered
+    primary_sector: communication
+    leverage_factor: 1.0
+    min_adverage_volume: 8000000
+
+  # Leveraged ETFs (2x)
+  - ticker: TQQQ
+    name: ProShares UltraPro QQQ
+    etf_type: levered_2x
+    primary_sector: technology
+    leverage_factor: 3.0
+    min_adverage_volume: 5000000
+  
+  - ticker: UPRO
+    name: ProShares UltraPro S&P 500
+    etf_type: levered_2x
+    primary_sector: broad_market
+    leverage_factor: 3.0
+    min_adverage_volume: 3000000
+
+  # Inverse ETFs
+  - ticker: SH
+    name: ProShares Short S&P 500
+    etf_type: inverse
+    primary_sector: broad_market
+    leverage_factor: -1.0
+    min_adverage_volume: 3000000
+  
+  - ticker: SDS
+    name: ProShares UltraShort S&P 500
+    etf_type: inverse_levered
+    primary_sector: broad_market
+    leverage_factor: -2.0
+    min_adverage_volume: 2000000

@@ -1,0 +1,5 @@
+ETF Universe loaded: 13 ETFs
+Unlevered ETFs: 9
+Leveraged ETFs: 12
+Universe validation: PASSED
+Exit code: 0
