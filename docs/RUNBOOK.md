@@ -106,3 +106,42 @@ Risk limits (editable in `config.yaml`):
 ## IBKR Setup Reference
 
 See full IBKR setup checklist in the plan: `atlas-gic-ibkr-paper-etf-margin.md`
+
+---
+
+## Layered Autoresearch (Optional)
+
+### Architecture
+
+The system uses a four-layer decision stack:
+- **Layer 1**: Macro agents (10 agents) - regime detection
+- **Layer 2**: Sector desks (7 sectors) - ETF-first ranking
+- **Layer 3**: Superinvestor filters (4 filters) - reweighting
+- **Layer 4**: Decision agents (CRO, Alpha, Execution, CIO) - final proposals
+
+### Shadow Mode
+
+To enable shadow-mode learning:
+
+1. Configure layer configs in `configs/layers/base/`
+2. Run pipeline normally - decisions are recorded to memory
+3. After market close, run shadow evaluation:
+   ```bash
+   python -c "from app.autoresearch.decision_memory import *"
+   python -c "from app.autoresearch.scorecard import *"
+   ```
+
+### Replay and Promotion
+
+1. **Memory**: Decisions stored in `data/autoresearch/memory.jsonl`
+2. **Scorecard**: Evaluates per-agent hit rate and mean return
+3. **Policy Updater**: Proposes single bounded change (max 10% delta)
+4. **Replay Evaluator**: Compares baseline vs candidate (requires 5% improvement)
+5. **Promotion**: If pass, config promoted to `configs/layers/promoted/`
+
+### Rollback
+
+If performance degrades:
+- Check `configs/layers/promoted/` for previous versions
+- Revert to base config: copy from `configs/layers/base/`
+- Audit trail in decision memory shows all changes
