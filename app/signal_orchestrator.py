@@ -8,6 +8,13 @@ from app.schemas import Recommendation, SignalDirection
 from app.universe import ETFUniverse, Sector
 from app.config import Config
 
+# Layer imports
+from app.layers.layer1_macro import MacroLayer
+from app.layers.layer2_sector import SectorLayer
+from app.layers.layer3_superinvestors import SuperinvestorLayer
+from app.layers.layer4_decision import DecisionLayer
+from app.layers.config_loader import load_layer_config
+
 
 @dataclass
 class MacroContext:
@@ -44,6 +51,59 @@ class SignalOrchestrator:
         self.universe = universe
         self.config = config
         self._random_seed = 42
+        
+        # Initialize layers
+        self._macro_layer = MacroLayer()
+        self._sector_layer = SectorLayer()
+        self._investor_layer = SuperinvestorLayer()
+        self._decision_layer = DecisionLayer()
+    
+    def generate_signals(self, macro_context: Optional[MacroContext] = None) -> list[Recommendation]:
+        """Generate trading signals through all layers."""
+        # Use new layered approach
+        return self._generate_signals_layered()
+    
+    def _generate_signals_layered(self) -> list[Recommendation]:
+        """Generate signals using the new four-layer architecture."""
+        # Sample market context (would come from data provider in production)
+        market_context = self._sample_market_context()
+        
+        # Layer 1: Macro regime assessment
+        macro_outputs = self._macro_layer.evaluate(market_context)
+        
+        # Layer 2: Sector ranking
+        sector_outputs = self._sector_layer.evaluate(macro_outputs)
+        
+        # Layer 3: Superinvestor reweighting
+        investor_outputs = self._investor_layer.evaluate(sector_outputs)
+        
+        # Layer 4: Decision aggregation
+        decision_result = self._decision_layer.evaluate(investor_outputs)
+        
+        # Convert to Recommendations
+        recommendations = []
+        for proposal in decision_result.proposals:
+            direction = SignalDirection.LONG if proposal.get("direction") == "LONG" else SignalDirection.NEUTRAL
+            recommendations.append(Recommendation(
+                ticker=proposal["ticker"],
+                direction=direction,
+                conviction=proposal.get("conviction", 50),
+                thesis=decision_result.rationale,
+                sector=proposal.get("source_filter", "unknown")
+            ))
+        
+        return recommendations
+    
+    def _sample_market_context(self) -> dict:
+        """Sample market context - simplified for now."""
+        random.seed(self._random_seed)
+        return {
+            "fed_bias": random.uniform(-0.5, 0.5),
+            "rate_path": random.uniform(-0.3, 0.3),
+            "cpi_trend": random.uniform(-0.3, 0.3),
+            "gdp_growth": random.uniform(0, 0.3),
+            "vix_level": random.uniform(10, 30),
+        }
     
     def generate_signals(self, macro_context: Optional[MacroContext] = None) -> list[Recommendation]:
         """Generate trading signals through all layers."""
