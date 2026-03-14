@@ -1,7 +1,17 @@
-"""Tests for layer output models."""
+"""Tests for layer output models and config loader."""
 import pytest
+from pathlib import Path
 
 from app.layers.models import MacroAgentOutput, SectorDeskOutput, SuperinvestorOutput, DecisionLayerResult
+from app.layers.config_loader import load_layer_config
+
+
+def test_config_loader_reads_macro_agent_weights():
+    """Config loader should read base layer config and return version, agents, and weights."""
+    config = load_layer_config("layer1_macro")
+    assert "version" in config
+    assert "agents" in config
+    assert "central_bank" in config["agents"]
 
 
 def test_macro_agent_output_has_agent_and_config_versions():

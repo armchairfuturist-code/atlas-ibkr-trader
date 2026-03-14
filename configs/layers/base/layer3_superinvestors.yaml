@@ -1,0 +1,35 @@
+# Layer 3: Superinvestor filters - 4 investor-style reweighting filters
+version: v1
+filters:
+  buffett_style:
+    name: Warren Buffett Style
+    description: Quality and value focus
+    weight_bounds: [0.8, 1.2]
+    criteria:
+      - low_debt
+      - high_roe
+      - consistent_earnings
+  graham_style:
+    name: Benjamin Graham Style
+    description: Deep value and margin of safety
+    weight_bounds: [0.7, 1.3]
+    criteria:
+      - pe_below_15
+      - pb_below_1.5
+      - current_ratio_above_2
+  lynch_style:
+    name: Peter Lynch Style
+    description: Growth at reasonable price
+    weight_bounds: [0.9, 1.1]
+    criteria:
+      - peg_below_1
+      - earnings_growth_above_10
+      - reasonable_debt
+  simons_style:
+    name: Jim Simons Style
+    description: Quantitative momentum and mean reversion
+    weight_bounds: [0.85, 1.15]
+    criteria:
+      - momentum_signal
+      - volatility_adjusted
+      - correlation_breadth
