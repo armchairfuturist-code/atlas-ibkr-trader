@@ -4,14 +4,21 @@ from pathlib import Path
 
 from app.layers.models import MacroAgentOutput, SectorDeskOutput, SuperinvestorOutput, DecisionLayerResult
 from app.layers.config_loader import load_layer_config
+from app.layers.layer1_macro import MacroLayer
 
 
-def test_config_loader_reads_macro_agent_weights():
-    """Config loader should read base layer config and return version, agents, and weights."""
-    config = load_layer_config("layer1_macro")
-    assert "version" in config
-    assert "agents" in config
-    assert "central_bank" in config["agents"]
+def test_layer1_returns_ten_macro_agent_outputs():
+    """MacroLayer should return outputs for all 10 configured agents."""
+    layer = MacroLayer(load_layer_config("layer1_macro"))
+    # Sample market context - would come from data layer in production
+    market_context = {
+        "fed_bias": 0.3,
+        "rate_path": 0.5,
+        "cpi_trend": -0.2,
+    }
+    outputs = layer.evaluate(market_context)
+    assert len(outputs) == 10
+    assert all(isinstance(o, MacroAgentOutput) for o in outputs)
 
 
 def test_macro_agent_output_has_agent_and_config_versions():
