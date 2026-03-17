@@ -12,7 +12,7 @@ from app.intent_translator import IntentTranslator
 from app.approval_gate import ApprovalGate
 from app.ibkr_adapter import IBKRAdapter
 from app.no_trade_controller import NoTradeController
-from app.data.providers import FixtureProvider, create_fresh_fixture
+from app.data.providers import FixtureProvider, create_fresh_fixture, IBKRDataProvider
 from app.schemas import OrderStatus
 
 
@@ -44,7 +44,7 @@ class DailyPipeline:
     6. Submit: Submit to IBKR paper
     """
     
-    def __init__(self, config_path: str = "fixtures/config.paper.yaml"):
+    def __init__(self, config_path: str = "fixtures/config.paper.yaml", use_ibkr_data: bool = True):
         # Load config
         self.config = load_config_from_file(config_path)
         
@@ -57,8 +57,21 @@ class DailyPipeline:
         self.approval_gate = ApprovalGate()
         self.ibkr_adapter = IBKRAdapter(self.config)
         
-        # Data provider
-        self.data_provider = FixtureProvider(create_fresh_fixture())
+        # Data provider - use IBKR real data if available
+        if use_ibkr_data:
+            self.data_provider = IBKRDataProvider(
+                host=self.config.ibkr_host,
+                port=self.config.ibkr_port,
+                client_id=self.config.ibkr_client_id
+            )
+            connected, error = self.data_provider.connect()
+            if not connected:
+                print(f"Warning: Could not connect to IBKR data: {error}")
+                print("Falling back to fixture data")
+                self.data_provider = FixtureProvider(create_fresh_fixture())
+        else:
+            self.data_provider = FixtureProvider(create_fresh_fixture())
+        
         self.no_trade_controller = NoTradeController(self.data_provider)
         
         # Orchestrator

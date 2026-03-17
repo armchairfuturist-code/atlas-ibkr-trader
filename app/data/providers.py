@@ -123,3 +123,120 @@ def create_stale_fixture() -> dict[str, Quote]:
             volume=80000000, timestamp=stale_time
         ),
     }
+
+
+class IBKRDataProvider(DataProvider):
+    """Real-time data provider using ib_insync."""
+    
+    def __init__(self, host: str = "127.0.0.1", port: int = 7497, client_id: int = 1):
+        self.host = host
+        self.port = port
+        self.client_id = client_id
+        self._ib = None
+        self._connected = False
+        self._cache: dict[str, Quote] = {}
+    
+    def connect(self) -> tuple[bool, Optional[str]]:
+        """Connect to IBKR."""
+        try:
+            import asyncio
+            
+            async def _connect():
+                import nest_asyncio
+                nest_asyncio.apply()
+                from ib_insync import IB
+                self._ib = IB()
+                self._ib.connect(self.host, self.port, clientId=self.client_id)
+                return self._ib.isConnected()
+            
+            # Run async connect
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                result = loop.run_until_complete(_connect())
+                if result:
+                    self._connected = True
+                    return True, None
+                return False, "Connection returned false"
+            finally:
+                loop.close()
+                
+        except Exception as e:
+            return False, str(e)
+    
+    def disconnect(self) -> None:
+        """Disconnect from IBKR."""
+        if self._ib and self._connected:
+            self._ib.disconnect()
+            self._connected = False
+    
+    def get_quote(self, ticker: str) -> Optional[Quote]:
+        """Get real-time quote from IBKR."""
+        if not self._connected:
+            return None
+        
+        try:
+            contract = self._ib.reqContractDetails(
+                self._ib.compileContractId(ticker, "STK")
+            )[0].contract
+            
+            # Request live tickers
+            ticker_obj = self._ib.reqMktData(contract, "", False, False)
+            self._ib.sleep(0.5)  # Wait for data
+            
+            quote = Quote(
+                ticker=ticker,
+                bid=ticker_obj.bid or 0,
+                ask=ticker_obj.ask or 0,
+                last=ticker_obj.last or 0,
+                volume=ticker_obj.volume or 0,
+                timestamp=datetime.now()
+            )
+            
+            # Cancel the subscription
+            self._ib.cancelMktData(ticker_obj)
+            
+            # Cache it
+            self._cache[ticker.upper()] = quote
+            return quote
+            
+        except Exception as e:
+            # Fall back to cache
+            return self._cache.get(ticker.upper())
+    
+    def get_historical(self, ticker: str, days: int) -> list[OHLCV]:
+        """Get historical bars from IBKR."""
+        if not self._connected:
+            return []
+        
+        try:
+            contract = self._ib.reqContractDetails(
+                self._ib.compileContractId(ticker, "STK")
+            )[0].contract
+            
+            bars = self._ib.reqHistoricalData(
+                contract, "", f"{days} D", "1 day", "TRADES", False
+            )
+            
+            return [
+                OHLCV(
+                    ticker=ticker,
+                    open=bar.open,
+                    high=bar.high,
+                    low=bar.low,
+                    close=bar.close,
+                    volume=bar.volume,
+                    timestamp=bar.date
+                )
+                for bar in bars
+            ]
+        except Exception:
+            return []
+    
+    def is_fresh(self, ticker: str, max_age_seconds: int = 60) -> bool:
+        """Check if cached quote is fresh."""
+        quote = self._cache.get(ticker.upper())
+        if quote is None:
+            return False
+        age = (datetime.now() - quote.timestamp).total_seconds()
+        return age < max_age_seconds
