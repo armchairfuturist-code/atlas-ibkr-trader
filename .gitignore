@@ -7,4 +7,9 @@ dist/
 build/
 .eggs/
 *.egg
-nul  
+nul
+.worktrees/
+.qwen/
+graphify-out/
+*.pyc
+.sisyphus/
