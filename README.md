@@ -57,6 +57,23 @@ Every stage produces typed, audit-logged artifacts. The system never trades auto
 
 ---
 
+## Narrative Context
+
+> **This project has a philosophical backbone.** Every analysis, every signal, every recommendation is informed by a narrative framework encoded in [`docs/NARRATIVE_CONTEXT.md`](docs/NARRATIVE_CONTEXT.md).
+
+Markets are not just numbers. They are compression engines — they take the vast shape of the future and reduce it to a price. The system's prediction tools are designed to read this compression, detect when the market's model is desynchronizing from reality, and surface the gap.
+
+The framework is built on four universal dynamics — **Efficiency of Intelligence**, **Compression**, **Coherence**, and **Selection** — that govern everything from neural architectures to energy transitions to financial markets. These are integrated with Leopold Aschenbrenner's *Situational Awareness* thesis (OOMs framework, trillion-dollar cluster buildout, AI power requirements going from 1%→20%+ of US electricity by 2030).
+
+**What this means for anyone using the repo:**
+- A "BUY" signal on a stock in the *priced-in* phase of its narrative lifecycle is weaker than a "HOLD" on a stock in *pre-discovery*
+- The largest opportunities sit in coherence gaps — parts of the AI value chain that have desynchronized from each other (e.g., photonics stocks up 400% while power stocks are down 20%)
+- The 13F tracker (`app/track_13f.py`) lets you compare our system's signals against smart money positions from any filer, seeded with Situational Awareness LP ($5.5B AUM)
+
+**Read the full framework:** [`docs/NARRATIVE_CONTEXT.md`](docs/NARRATIVE_CONTEXT.md)
+
+---
+
 ## Architecture
 
 ### Pipeline Flow
