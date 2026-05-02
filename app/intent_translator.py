@@ -30,7 +30,9 @@ class IntentTranslator:
     def translate(
         self,
         recommendation: Recommendation,
-        risk_verdict: RiskVerdictEvent
+        risk_verdict: RiskVerdictEvent,
+        proposed_shares: Optional[int] = None,
+        estimated_price: float = 100.0
     ) -> tuple[Optional[ProposedIntent], Optional[str]]:
         """
         Translate recommendation to proposed intent.
@@ -45,18 +47,19 @@ class IntentTranslator:
         if etf is None:
             return None, f"Unknown ticker: {recommendation.ticker}"
         
-        # Calculate position size based on conviction
-        # Higher conviction = larger position
-        base_size = self._calculate_size(recommendation.conviction)
-        
-        # Determine shares (round to nearest 100 for ETFs)
-        shares = (base_size // 100) * 100
-        if shares < 100:
-            shares = 100  # Minimum 100 shares
+        if proposed_shares is not None:
+            shares = proposed_shares
+        else:
+            # Calculate position size based on conviction
+            # Higher conviction = larger position
+            base_size = self._calculate_size(recommendation.conviction)
+            
+            # Determine shares (round to nearest 100 for ETFs)
+            shares = (base_size // 100) * 100
+            if shares < 100:
+                shares = 100  # Minimum 100 shares
         
         # Calculate estimated value
-        # In production, would get real-time price
-        estimated_price = 100.0  # Stub
         estimated_value = shares * estimated_price
         
         # Create proposed intent
@@ -86,7 +89,9 @@ class IntentTranslator:
     def translate_batch(
         self,
         recommendations: list[Recommendation],
-        risk_verdicts: dict[str, RiskVerdictEvent]
+        risk_verdicts: dict[str, RiskVerdictEvent],
+        proposed_shares_map: Optional[dict[str, int]] = None,
+        prices_map: Optional[dict[str, float]] = None
     ) -> list[ProposedIntent]:
         """Translate multiple recommendations to intents."""
         intents = []
@@ -96,7 +101,10 @@ class IntentTranslator:
             if verdict is None:
                 continue
             
-            intent, error = self.translate(rec, verdict)
+            shares = proposed_shares_map.get(rec.id) if proposed_shares_map else None
+            price = prices_map.get(rec.ticker, 100.0) if prices_map else 100.0
+            
+            intent, error = self.translate(rec, verdict, proposed_shares=shares, estimated_price=price)
             if intent:
                 intents.append(intent)
         

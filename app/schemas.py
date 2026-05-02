@@ -1,4 +1,5 @@
 """Decision, risk, and audit event schemas."""
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -8,13 +9,32 @@ from uuid import uuid4
 
 class SignalDirection(str, Enum):
     """Trading signal direction."""
+
     LONG = "LONG"
     SHORT = "SHORT"
     NEUTRAL = "NEUTRAL"
 
 
+class SignalRating(str, Enum):
+    """5-tier rating scale from TradingAgents.
+
+    - BUY: Strong conviction to enter/add position
+    - OVERWEIGHT: Favorable, gradually increase exposure
+    - HOLD: Maintain current position
+    - UNDERWEIGHT: Reduce exposure, partial profits
+    - SELL: Exit position or avoid entry
+    """
+
+    BUY = "BUY"
+    OVERWEIGHT = "OVERWEIGHT"
+    HOLD = "HOLD"
+    UNDERWEIGHT = "UNDERWEIGHT"
+    SELL = "SELL"
+
+
 class RiskVerdict(str, Enum):
     """Risk engine verdict."""
+
     PASS = "PASS"
     REJECT = "REJECT"
     REVIEW = "REVIEW"
@@ -22,6 +42,7 @@ class RiskVerdict(str, Enum):
 
 class OrderStatus(str, Enum):
     """Order status."""
+
     PENDING_APPROVAL = "PENDING_APPROVAL"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
@@ -31,6 +52,7 @@ class OrderStatus(str, Enum):
 
 class RejectCode(str, Enum):
     """Machine-readable reject codes."""
+
     GROSS_LEVERAGE_BREACH = "GROSS_LEVERAGE_BREACH"
     POSITION_SIZE_BREACH = "POSITION_SIZE_BREACH"
     SECTOR_CONCENTRATION_BREACH = "SECTOR_CONCENTRATION_BREACH"
@@ -47,19 +69,25 @@ class RejectCode(str, Enum):
 @dataclass
 class Recommendation:
     """Trading recommendation from signal generator."""
+
     id: str = field(default_factory=lambda: str(uuid4()))
     ticker: str = ""
     direction: SignalDirection = SignalDirection.NEUTRAL
-    conviction: int = 0  # 1-100
+    conviction: int = 50  # 1-100 scale
     thesis: str = ""
     target_price: Optional[float] = None
     sector: str = ""
     timestamp: datetime = field(default_factory=datetime.now)
+    # 5-tier rating from multi-agent analysis
+    rating: SignalRating = SignalRating.HOLD
+    # Dynamic position sizing based on conviction
+    position_size_pct: float = 0.0
 
 
 @dataclass
 class RiskVerdictEvent:
     """Risk evaluation result."""
+
     id: str = field(default_factory=lambda: str(uuid4()))
     recommendation_id: str = ""
     verdict: RiskVerdict = RiskVerdict.REVIEW
@@ -72,6 +100,7 @@ class RiskVerdictEvent:
 @dataclass
 class ApprovalRecord:
     """Human approval record."""
+
     id: str = field(default_factory=lambda: str(uuid4()))
     proposed_intent_id: str = ""
     approver_id: str = ""
@@ -82,6 +111,7 @@ class ApprovalRecord:
 @dataclass
 class ProposedIntent:
     """Proposed order intent awaiting approval."""
+
     id: str = field(default_factory=lambda: str(uuid4()))
     recommendation_id: str = ""
     risk_verdict_id: str = ""
@@ -96,6 +126,7 @@ class ProposedIntent:
 @dataclass
 class OrderSubmission:
     """Final submitted order."""
+
     id: str = field(default_factory=lambda: str(uuid4()))
     proposed_intent_id: str = ""
     approval_id: str = ""
