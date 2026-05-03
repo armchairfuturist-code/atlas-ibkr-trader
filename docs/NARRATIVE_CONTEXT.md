@@ -185,4 +185,75 @@ A "BUY" signal from the technical system on a stock in the **priced-in** phase i
 
 ---
 
+## The Chamath Corollary: Asset-Light → Asset-Heavy Regime Change
+
+> Source: Chamath Palihapitiya, 2026
+> This is the missing link between "the buildout *will* happen" (Aschenbrenner) and "here's why the old valuation models break" (Chamath).
+
+### The Claim
+
+For 20 years, the Magnificent Seven won with the greatest business model ever invented — asset-light software. Write once, sell to a billion people, zero marginal cost. Pure leverage. No factories. No raw materials. No physical infrastructure. That's how you get 30-60x P/E multiples.
+
+**AI just blew that model up.**
+
+| Metric | 2024 | 2026 (projected) | Δ |
+|---|---|---|---|
+| Hyperscaler capex (combined) | ~$250B | **$600-725B** | 2.5-3x |
+| Capex vs FCF | Below FCF | **Above FCF** | Regime change |
+| New debt raised | Minimal | **$108B** (2025 alone) | Structural shift |
+| Projected cumulative debt (next few years) | — | **$1.5T** | Unprecedented |
+
+### The Math That Breaks
+
+Microsoft re-signed Three Mile Island at **>$100/MWh** — nearly double the spot rate of ~$60 for wind/solar in the same region. A 20-year forward purchase agreement baked into operating cash flows. This is not a one-off. This is the new normal.
+
+**When a company is asset-light,** investors pay a premium for that lightness (30-60x P/E). The multiple reflects the belief that returns on capital stay high indefinitely because there's no heavy physical plant dragging them down.
+
+**When Google starts looking like a utility** — locked into 20-year energy contracts, carrying hundreds of billions in debt, spending half its revenue on physical infrastructure — the rational multiple compresses. You don't price a utility at 30x earnings. You price it at 12x.
+
+This is compression in action: the market is still compressing hyperscalers as asset-light software companies, but the underlying reality is asset-heavy utility. The gap between those two compressions is where the re-rating happens.
+
+### The Investment Implication
+
+**Stop trying to value the senders. Follow the money to the receivers.**
+
+~$1T/year is flowing out of the hyperscalers into:
+- Power companies (buying 20-year PPAs at premium rates)
+- Data center operators (leasing capacity at escalating rents)
+- Chip manufacturers (Nvidia, TSMC, Japanese materials)
+- Cooling systems (liquid cooling for 1MW+ racks)
+- Fiber networks (optical interconnects, photonics)
+- Rare earth metals (magnets, specialty materials)
+
+**These receiving-end companies are underpriced because the market is still staring at the senders while ignoring who's cashing the checks.**
+
+### How This Maps to the Four Rules
+
+| Rule | The Asset-Light Era (1995-2024) | The Asset-Heavy Era (2025-2035) |
+|---|---|---|
+| **Efficiency** | Software scaled at zero marginal cost | Physical infrastructure scales at physics-limited cost |
+| **Compression** | P/E multiples reflected pure operating leverage | P/E multiples must account for debt-funded capex, long-term PPAs |
+| **Coherence** | Value chain was thin — code → user | Value chain is thick — chips → power → cooling → fiber → real estate |
+| **Selection** | Best software won (fastest replication) | Best *physical* infrastructure wins (access to power, permits, supply chains) |
+
+### What This Means for the System's Recommendations
+
+The old regime favored companies that owned nothing. The new regime favors companies that own everything — power plants, data center sites, fiber rights-of-way, rare earth mines, chip fabs. **The system's current tilt toward "pre-discovery" infrastructure plays (power, rare earths, Japanese materials) is correct, and Chamath's math provides the quantitative justification.**
+
+### Gaps in the Current System
+
+The system does NOT currently model:
+
+1. **Hyperscaler debt dynamics** — The ratio of capex to FCF, the trajectory of debt issuance, the rollover risk. This is the canary in the coal mine. When debt markets start asking questions about hyperscaler credit profiles, the multiple compression accelerates.
+
+2. **PPA liability recognition** — The $100+/MWh long-term contracts are liabilities that don't appear on balance sheets (they're off-balance-sheet commitments). When/if accounting standards force recognition, it changes everything.
+
+3. **Receiver-company revenue visibility** — The system doesn't track how much of a power company's revenue is backed by hyperscaler PPAs. Higher PPA-backed revenue = higher multiple (contractually secured cash flows).
+
+4. **Asset-light → asset-heavy transition detection** — No mechanism to detect when a sector is transitioning between regimes. The NARRATIVE_CONTEXT.md captures it conceptually, but the technical analysis layer doesn't.
+
+**Recommended metric to add:** The "Receiver Ratio" — percentage of a company's forward revenue that is contractually committed via hyperscaler infrastructure contracts. Higher = lower risk, higher multiple, regardless of sector.
+
+---
+
 *This document is a living framework. Update it when new 13F filings drop, when narrative phases shift, and when the four rules reveal new patterns.*
