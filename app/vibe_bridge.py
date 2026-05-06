@@ -4,13 +4,17 @@ Vibe-Trading Bridge — Connects our system's recommendations to Vibe-Trading's
 backtesting engines, strategy generation, and multi-platform export.
 
 Architecture:
-  Our System (recommendation + risk + narrative) 
+  Our System (recommendation + risk + narrative)
     → Vibe-Trading (backtest + strategy + export)
     → Browser / TradingView / MT5
 
+Venv auto-detection: looks for .vibe-venv/ (Python 3.11) relative to project root.
+Falls back to PATH if not found.
+
 Usage:
     python -m app.vibe_bridge backtest --ticker TLN --start 2024-01-01 --end 2026-05-01
-    python -m app.vibe_bridge run-swarm --preset investment_committee --target "TLN energy transition"
+    python -m app.vibe_bridge swarm --preset investment_committee --target "TLN"
+    python -m app.vibe_bridge recommend --ticker TLN --conviction 67 --sector POWER
     python -m app.vibe_bridge serve   # Start Vibe-Trading API server
 """
 
@@ -92,26 +96,70 @@ class VibeTradingBridge:
 
     def __init__(self, data_dir: Optional[Path] = None):
         self.data_dir = data_dir or Path.home() / ".vibe-trading"
-        self._check_available()
+        self._venv_dir = self._find_venv()
+        self._vibe_python = self._venv_dir / "Scripts" / "python.exe" if self._venv_dir else None
+        self._vibe_cli = self._venv_dir / "Scripts" / "vibe-trading.exe" if self._venv_dir else "vibe-trading"
+        self._vibe_mcp = self._venv_dir / "Scripts" / "vibe-trading-mcp.exe" if self._venv_dir else "vibe-trading-mcp"
+        self._available = self._check_available()
+
+    def _find_venv(self) -> Optional[Path]:
+        """Auto-detect .vibe-venv relative to project root."""
+        # Check common locations
+        candidates = [
+            ROOT / ".vibe-venv",
+            ROOT.parent / ".vibe-venv",
+            Path.home() / ".vibe-venv",
+        ]
+        for c in candidates:
+            if (c / "Scripts" / "python.exe").exists():
+                logger.info(f"Vibe-Trading venv found at: {c}")
+                return c
+        logger.warning("No .vibe-venv found. Falling back to PATH.")
+        return None
 
     def _check_available(self) -> bool:
-        """Check if Vibe-Trading is installed."""
+        """Check if Vibe-Trading CLI is available."""
+        if self._vibe_python:
+            # Check via venv Python
+            try:
+                result = subprocess.run(
+                    [str(self._vibe_python), "-m", "vibe_trading", "--version"],
+                    capture_output=True, text=True, timeout=5
+                )
+                available = result.returncode == 0
+                if available:
+                    logger.info(f"Vibe-Trading available (venv): {result.stderr.strip() or result.stdout.strip()}")
+                return available
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                pass
+        # Fallback: check PATH
         try:
             result = subprocess.run(
-                ["vibe-trading", "--version"],
+                [str(self._vibe_cli), "--version"],
                 capture_output=True, text=True, timeout=5
             )
             available = result.returncode == 0
             if available:
-                logger.info(f"Vibe-Trading available: {result.stdout.strip()}")
+                logger.info(f"Vibe-Trading available (PATH): {result.stdout.strip()}")
             return available
         except (FileNotFoundError, subprocess.TimeoutExpired):
-            logger.warning("Vibe-Trading CLI not found")
+            logger.warning("Vibe-Trading CLI not found on PATH")
             return False
 
     @property
     def available(self) -> bool:
-        return self._check_available()
+        return self._available
+
+    def _run_vibe(self, cmd: list[str], timeout: int = 120) -> subprocess.CompletedProcess:
+        """Run a Vibe-Trading command, preferring venv."""
+        if self._vibe_python:
+            full_cmd = [str(self._vibe_python), "-m", "vibe_trading"] + cmd
+        else:
+            full_cmd = [str(self._vibe_cli)] + cmd
+        return subprocess.run(
+            full_cmd, capture_output=True, text=True, timeout=timeout,
+            env={**os.environ, "VIBE_TRADING_ENABLE_SHELL_TOOLS": "1"}
+        )
 
     def backtest(self, request: BacktestRequest) -> BacktestResult:
         """
@@ -131,10 +179,8 @@ class VibeTradingBridge:
         logger.info(f"Running Vibe-Trading backtest for {request.ticker}...")
 
         try:
-            result = subprocess.run(
-                ["vibe-trading", "run", "-p", prompt, "--json"],
-                capture_output=True, text=True, timeout=120,
-                env={**os.environ, "VIBE_TRADING_ENABLE_SHELL_TOOLS": "1"}
+            result = self._run_vibe(
+                ["run", "-p", prompt, "--json"], timeout=120
             )
 
             output = result.stdout if result.stdout else result.stderr
@@ -228,7 +274,7 @@ class VibeTradingBridge:
             var_args.extend(["--vars", f"{k}={v}"])
 
         cmd = [
-            "vibe-trading", "--swarm-run", request.preset,
+            "--swarm-run", request.preset,
             request.target,
             *var_args,
             "--json"
@@ -237,10 +283,7 @@ class VibeTradingBridge:
         logger.info(f"Running swarm: {request.preset} on {request.target}...")
 
         try:
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=180,
-                env={**os.environ, "VIBE_TRADING_ENABLE_SHELL_TOOLS": "1"}
-            )
+            result = self._run_vibe(cmd, timeout=180)
 
             output = result.stdout if result.stdout else result.stderr
 
@@ -289,11 +332,137 @@ class VibeTradingBridge:
 
     def start_api_server(self, port: int = 8899, host: str = "127.0.0.1", dev: bool = False):
         """Start Vibe-Trading API server (blocking)."""
-        cmd = ["vibe-trading", "serve", "--host", host, "--port", str(port)]
-        if dev:
-            cmd.append("--dev")
-        logger.info(f"Starting Vibe-Trading API server on {host}:{port}...")
-        subprocess.run(cmd)
+        self._run_vibe(["serve", "--host", host, "--port", str(port)] + (["--dev"] if dev else []), timeout=0)
+
+    def backtest_direct(
+        self,
+        ticker: str,
+        start_date: str = "2024-01-01",
+        end_date: str = "",
+        initial_cash: float = 100000.0,
+        sma_fast: int = 20,
+        sma_slow: int = 50,
+    ) -> dict:
+        """
+        Run a backtest using Vibe-Trading's engine directly via the Python 3.11 venv.
+
+        Uses the runner-module strategy pattern: writes a signal strategy module
+        and passes it to run_backtest() with the yfinance loader.
+        Requires .vibe-venv with Python 3.11 and vibe-trading-ai installed.
+
+        Args:
+            ticker: Stock ticker
+            start_date: Start date YYYY-MM-DD
+            end_date: End date YYYY-MM-DD
+            initial_cash: Initial capital
+            sma_fast: Fast SMA period
+            sma_slow: Slow SMA period
+
+        Returns:
+            dict with backtest results or error
+        """
+        if not self._vibe_python:
+            return {"error": "No .vibe-venv found. Direct engine mode requires Python 3.11 venv."}
+
+        if not end_date:
+            end_date = datetime.now().strftime("%Y-%m-%d")
+
+        strategy_code = f'''
+def signal_engine(df):
+    \"\"\"SMA Crossover strategy.\"\"\"
+    df = df.copy()
+    df["sma_fast"] = df["close"].rolling({sma_fast}).mean()
+    df["sma_slow"] = df["close"].rolling({sma_slow}).mean()
+    df["signal"] = 0
+    df.loc[df["sma_fast"] > df["sma_slow"], "signal"] = 1
+    df.loc[df["sma_fast"] <= df["sma_slow"], "signal"] = -1
+    return df
+'''
+
+        script = f'''
+import sys, json
+sys.path.insert(0, r'{ROOT}')
+sys.path.insert(0, r'{ROOT}/app')
+
+from pathlib import Path
+from backtest.engines.global_equity import GlobalEquityEngine
+from backtest.loaders.yfinance_loader import DataLoader as YfinanceLoader
+from backtest.runner import _fetch_auto
+
+# Write strategy module
+strat_dir = Path(r'{ROOT}') / "tmp_strat"
+strat_dir.mkdir(exist_ok=True)
+(strat_dir / "__init__.py").touch()
+(strat_dir / "signal.py").write_text(r"""{strategy_code}""")
+sys.path.insert(0, str(strat_dir))
+
+import signal as signal_module
+
+config = {{
+    "ticker": ["{ticker}"],
+    "start_date": "{start_date}",
+    "end_date": "{end_date}",
+    "initial_cash": {initial_cash},
+    "leverage": 1.0,
+    "slippage_us": 0.0005,
+}}
+
+try:
+    loader = YfinanceLoader()
+    raw = loader.fetch(["{ticker}"], start_date="{start_date}", end_date="{end_date}", interval="1D")
+    data = raw["{ticker}"]
+except Exception as e:
+    print(json.dumps({{"error": f"Data load: {{e}}"}}))
+    sys.exit(1)
+
+engine = GlobalEquityEngine(config=config, market="us")
+engine.run_backtest(
+    config=config,
+    loader=loader,
+    signal_engine=signal_module,
+    run_dir=strat_dir,
+)
+trades = len(engine.trades)
+snaps = engine.equity_snapshots
+ret = ((snaps[-1].equity / snaps[0].equity) - 1) * 100 if len(snaps) >= 2 else 0
+result = {{
+    "ticker": "{ticker}",
+    "total_return_pct": round(ret, 2),
+    "num_trades": trades,
+    "initial_capital": round(snaps[0].equity, 2),
+    "final_equity": round(snaps[-1].equity, 2),
+    "start_date": "{start_date}",
+    "end_date": "{end_date}",
+}}
+print(json.dumps(result))
+
+# Cleanup
+import shutil
+shutil.rmtree(strat_dir, ignore_errors=True)
+'''
+        tmp = ROOT / "tmp_vibe_bt.py"
+        tmp.write_text(script)
+        try:
+            result = subprocess.run(
+                [str(self._vibe_python), str(tmp)],
+                capture_output=True, text=True, timeout=180,
+                cwd=str(ROOT)
+            )
+            out = result.stdout.strip()
+            if out:
+                try:
+                    return json.loads(out)
+                except json.JSONDecodeError:
+                    return {"raw_output": out[:1000], "stderr": result.stderr[:500]}
+            err = result.stderr.strip()
+            return {"error": err[:1500] if err else "No output"}
+        except subprocess.TimeoutExpired:
+            return {"error": "Direct backtest timed out"}
+        except Exception as e:
+            return {"error": str(e)}
+        finally:
+            if tmp.exists():
+                tmp.unlink()
 
 
 # Singleton
