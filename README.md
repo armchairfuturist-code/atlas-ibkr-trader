@@ -53,6 +53,9 @@ Every stage produces typed, audit-logged artifacts. The system never trades auto
 | **Hard Risk Engine** | 1.25x leverage cap, 12.5% position limit, 30% sector cap, 2.5% daily stop |
 | **Human Approval Gate** | Token-based approval with replay protection |
 | **Paper-Only Lock** | Hard fail-closed: live mode blocked at the config level |
+| **13F Smart Money Tracker** | Compare system signals against any fund's SEC filings |
+| **Vibe-Trading Integration** | Backtest recommendations, export to TradingView/Pine Script |
+| **Portfolio Holdings Query** | Read-only TWS connection to fetch actual positions with P&L |
 | **Autoresearch Loop** | Scorecard → policy update → replay evaluation → keep/revert |
 
 ---
@@ -194,7 +197,10 @@ atlas-ibkr-trader/
 │   ├── approval_gate.py         # Human approval with replay protection
 │   ├── ibkr_adapter.py          # TWS connectivity + stub fallback
 │   ├── intent_translator.py     # Recommendation → ProposedIntent
-│   └── no_trade_controller.py   # Stale data → no-trade
+│   ├── no_trade_controller.py   # Stale data → no-trade
+│   ├── track_13f.py             # 13F smart money tracker (Aschenbrenner seeded)
+│   ├── vibe_bridge.py           # Vibe-Trading backtest + swarm + export bridge
+│   └── holdings_query.py        # Read-only IBKR positions/orders query
 │
 ├── configs/layers/              # Layer configuration YAMLs
 ├── fixtures/                    # Test fixtures (config, universe, market data)
@@ -260,6 +266,44 @@ python -m app.pipeline.run_daily --mode paper --fixture fixtures/config.paper.ya
 
 Structured pipeline with stage-gated execution (`--stage pre_exec`, `risk`, `approval`, `submit`).
 
+### 6. Backtest Recommendations (Vibe-Trading Integration)
+```bash
+# Requires Python 3.11 venv for direct engine mode
+.vibe-venv\Scripts\pip install vibe-trading-ai
+
+# Backtest one of our receiver-company picks
+python -m app.vibe_bridge recommend --ticker TLN --conviction 67 --sector POWER
+
+# Run multi-agent research swarm
+python -m app.vibe_bridge swarm --preset investment_committee --target "TLN AI power thesis"
+
+# Start API server
+python -m app.vibe_bridge serve --port 8899
+```
+
+Leverages [Vibe-Trading](https://github.com/HKUDS/Vibe-Trading)'s 7 backtest engines, 74 research skills, and 29 multi-agent swarms for deep strategy validation and Pine Script export to TradingView.
+
+### 7. Query IBKR Holdings (Read-Only)
+```bash
+# Live TWS connection (port 7496 = live, 7497 = paper)
+python -m app.holdings_query --connect --port 7496 --save portfolio.json --scan
+
+# Or load from file and scan against recommendations
+python -m app.holdings_query --from-json portfolio.json --scan
+
+# Stub mode with demo data
+python -m app.holdings_query --stub --scan
+```
+
+Read-only connection to fetch actual positions, P&L, and open orders. Cross-references against system recommendations to identify concentration risks and gaps. **Zero write paths — no order placement capability.**
+
+### 8. Track Smart Money (13F Filings)
+```bash
+python -m app.track_13f --report
+```
+
+Compares our system's signals against SEC 13F filings from smart money managers. Seeded with Situational Awareness LP (Leopold Aschenbrenner, $5.5B AUM, +28.9% return). Extensible to any SEC filer.
+
 ---
 
 ## Risk Controls
@@ -287,7 +331,8 @@ All limits are configurable in `fixtures/config.paper.yaml`.
 | `pyyaml>=6.0` | Config/universe file loading | Required |
 | `pytest>=7.0` | Testing | Development |
 | `rank-bm25>=0.2.2` | Financial memory retrieval | Optional (fallback to recency) |
-| `yfinance` | Free market data | Optional (for standalone mode) |
+| `yfinance` | Free market data + price fallback | Optional (for standalone mode) |
+| `vibe-trading-ai` | Backtest engine + multi-agent swarms | Optional (Python 3.11 venv) |
 
 ---
 
@@ -306,6 +351,11 @@ This system is a **production-style paper-trading decision support system**. It 
 - ✅ Polymarket geopolitical sentiment
 - ✅ Correlation-adjusted risk management
 - ✅ 3-persona risk debate
+- ✅ 13F smart money tracker (Situational Awareness LP seeded)
+- ✅ Read-only IBKR holdings query (live TWS connection)
+- ✅ Vibe-Trading backtest integration (7 engines, 29 swarms)
+- ✅ Narrative context framework (Situational Awareness + Chamath Corollary)
+- ✅ Japanese chemical/materials analysis (Tokyo Stock Exchange)
 - ✅ Comprehensive test suite
 - ❌ Autonomous live trading (intentionally blocked)
 
