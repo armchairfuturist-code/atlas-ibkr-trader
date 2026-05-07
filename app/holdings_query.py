@@ -229,13 +229,55 @@ class IBKRHoldingsReader:
                 # Skip non-stock/ETF positions (options, futures, forex)
                 if sec_type not in ("STK", "ETF", "STOCK"):
                     continue
-                # Get current market price
-                mkt_price = float(pos.marketPrice) if pos.marketPrice else 0.0
+                
+                shares = float(pos.position) if pos.position else 0.0
                 avg_cost = float(pos.avgCost) if pos.avgCost else 0.0
-                shares = float(pos.position)
                 cost_basis = abs(shares) * avg_cost
-                market_value = abs(shares) * mkt_price
-                unrealized = float(pos.unrealizedPNL) if hasattr(pos, 'unrealizedPNL') else (market_value - cost_basis)
+                
+                # Safe market price extraction — handle different ib_insync versions
+                mkt_price = 0.0
+                if hasattr(pos, 'marketPrice') and pos.marketPrice:
+                    mkt_price = float(pos.marketPrice)
+                elif hasattr(pos, 'market_price') and pos.market_price:
+                    mkt_price = float(pos.market_price)
+                
+                # Get unrealized P&L safely
+                unrealized = 0.0
+                if hasattr(pos, 'unrealizedPNL') and pos.unrealizedPNL:
+                    try:
+                        unrealized = float(pos.unrealizedPNL)
+                    except (ValueError, TypeError):
+                        unrealized = 0.0
+                
+                # If market price not available from position, try reqMktData
+                if mkt_price <= 0 and shares != 0:
+                    try:
+                        from ib_insync import Stock as StockContract
+                        contract = StockContract(ticker, "SMART", "USD")
+                        self._ib.qualifyContracts(contract)
+                        ticker_data = self._ib.reqMktData(contract, snapshot=True)
+                        self._ib.sleep(0.5)
+                        if ticker_data and ticker_data.last:
+                            mkt_price = float(ticker_data.last)
+                        elif ticker_data and ticker_data.close:
+                            mkt_price = float(ticker_data.close)
+                    except Exception:
+                        pass
+                
+                # If still no market price, fall back to yfinance
+                if mkt_price <= 0 and shares != 0:
+                    try:
+                        import yfinance as yf
+                        t = yf.Ticker(ticker)
+                        hist = t.history(period="1d")
+                        if not hist.empty:
+                            mkt_price = float(hist['Close'].iloc[-1])
+                    except Exception:
+                        pass
+                
+                market_value = abs(shares) * mkt_price if mkt_price > 0 else cost_basis + unrealized
+                if unrealized == 0.0 and mkt_price > 0 and avg_cost > 0:
+                    unrealized = market_value - cost_basis
 
                 positions.append(HoldingPosition(
                     ticker=ticker,
@@ -264,7 +306,13 @@ class IBKRHoldingsReader:
             summary = AccountSummary()
             for item in raw:
                 tag = item.tag
-                val = float(item.value) if item.value else 0.0
+                # Skip non-numeric tags (e.g., account type names like "IRA-ROTH NEW")
+                if not item.value:
+                    continue
+                try:
+                    val = float(item.value)
+                except (ValueError, TypeError):
+                    continue  # Skip string values like "IRA-ROTH NEW", "MARGIN", etc.
                 if tag == "NetLiquidation":
                     summary.net_liquidation = val
                 elif tag == "TotalCashValue":
