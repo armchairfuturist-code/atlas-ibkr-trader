@@ -1,41 +1,59 @@
-# Atlas IBKR Paper Trader
+# Atlas — AI-Powered Investment Research System
 
-> **Multi-agent, AI-powered ETF trading decision system for Interactive Brokers paper accounts.**
+> **Multi-agent research, narrative intelligence, and portfolio analysis — no broker required.**
 
-An end-to-end research-to-order pipeline inspired by the ATLAS autoresearch architecture. This system coordinates **bull/bear debate agents**, **geopolitical sentiment analysis** (via Polymarket prediction markets), **ML-powered technical models** (Qlib LightGBM), **multi-DCF valuation**, and **4-layer signal orchestration** — all wrapped in a hard risk engine and human-approval gate. Paper trading only. Fail-closed on live mode.
+An open-source investment research platform that coordinates **bull/bear debate agents**, **geopolitical sentiment analysis**, **ML-powered technical models**, **multi-DCF valuation**, **4-layer signal orchestration**, and a **narrative context framework** — all wrapped in a hard risk engine. Works with or without Interactive Brokers.
+
+**Core philosophy:** Markets compress narratives into prices faster than fundamentals can verify. This system is designed to read that compression, detect when the market's model is desynchronizing from reality, and surface the gap.
 
 ---
 
-## Quick Start
+## Quick Start — No Account Needed
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Install
+pip install pydantic pyyaml pytest yfinance
 
-# Run standalone analysis (no IBKR needed)
+# Analyze a single ticker (uses yfinance — free, delayed ~15min)
 python analysis_standalone.py --ticker SPY
 
-# Or run the full pipeline (stub mode — no TWS needed)
+# Analyze income ETFs
+python analysis_standalone.py --income
+
+# Run the full multi-agent debate pipeline (stub mode)
 python run_daily.py
 
-# Full integrated system with sample data
-python integrated_trading_system.py --tickers XLE XAR USO --theme iran
+# View the narrative context framework
+cat docs/NARRATIVE_CONTEXT.md
 ```
+
+**Everything above works with zero configuration, no accounts, no API keys.**
 
 ---
 
 ## What This System Does
 
 ### Core Capability
-Transform market data into **risk-checked, human-approved, paper-only order intents** for ETF trading via Interactive Brokers.
+Generate **multi-dimensional investment research signals** by combining:
+- Multi-agent bull/bear debate
+- 5-strategy technical ensemble (Trend, Momentum, Mean Reversion, Volatility, Stat Arb)
+- Geopolitical sentiment from Polymarket prediction markets
+- 4-layer macro → sector → superinvestor → decision signal pipeline
+- Multi-DCF valuation (5 methodologies)
+- BM25 experiential memory (learns from past trade outcomes)
+- Narrative lifecycle phase detection (pre-discovery → exhaustion)
+
+**Optionally** (requires IBKR TWS):
+- Read-only portfolio holdings query
+- Paper trading execution with hard risk limits and human approval
 
 ### The Pipeline
 ```
 Market Data → Multi-Agent Research → 4-Layer Signal Orchestrator
-  → Risk Engine (hard limits) → Human Approval Gate → IBKR Paper Adapter
+  → Risk Engine → Human Approval → Execution (optional)
 ```
 
-Every stage produces typed, audit-logged artifacts. The system never trades autonomously — it always requires a human to approve before any paper order is submitted.
+Every stage produces typed, audit-logged artifacts. The system never trades autonomously.
 
 ### Key Features
 
@@ -84,7 +102,7 @@ The framework is built on four universal dynamics — **Efficiency of Intelligen
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Market Data Sources                          │
-│  TWS (live) · yfinance (free/delayed) · Fixtures (tests)       │
+│  yfinance (free, delayed) · TWS (live) · Fixtures (tests)      │
 └──────────┬──────────────────────────────────────┬──────────────┘
            │                                      │
            ▼                                      ▼
@@ -102,38 +120,27 @@ The framework is built on four universal dynamics — **Efficiency of Intelligen
 └──────────────────────┘                         │
                                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Risk Engine                                │
+│                   Analysis & Risk Engine                        │
 │                                                                 │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │ Hard Limits  │  │ Correlation  │  │ 3-Persona Debate     │  │
-│  │ • Leverage   │  │ Adjusted     │  │ • Aggressive (0.8)   │  │
-│  │ • Position   │  │ Position     │  │ • Conservative (0.3) │  │
-│  │ • Sector     │  │ Sizing       │  │ • Neutral (0.5)      │  │
-│  │ • Stop Loss  │  │              │  │                      │  │
+│  │ Technical    │  │ 5-Strategy   │  │ Narrative Lifecycle  │  │
+│  │ Indicators   │  │ Ensemble     │  │ Phase Detection      │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │ Risk Engine  │  │ BM25 Memory  │  │ 13F Smart Money      │  │
+│  │ (hard caps)  │  │ (past trades)│  │ Comparison Engine    │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 │                            │                                    │
-│                   → RiskVerdict (PASS/REJECT/REVIEW)           │
+│                   → Research Signals + Risk Verdicts            │
 └─────────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                Human Approval Gate                              │
+│  Output (choose your own adventure)                             │
 │                                                                 │
-│  ProposedIntent → [Human Reviews] → ApprovalRecord (tokened)   │
-│                                                                 │
-│  Replay protection: once approved/rejected, token is consumed   │
-└─────────────────────────────────────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              IBKR Paper Adapter                                 │
-│                                                                 │
-│  • Real TWS connection via ib_insync (port 7497)               │
-│  • Stub mode fallback (no TWS needed)                           │
-│  • Paper trading only — live blocked by policy                  │
-│  • Pre-trade broker checks (buying power, connectivity)         │
-│                                                                 │
-│  → OrderSubmission → TWS Paper Account                          │
+│  • CLI analysis report   • TradingView (via Vibe-Trading)       │
+│  • IBKR paper order      • CSV/JSON export                     │
+│  • Pine Script strategy   • Manual trade (your own broker)     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -326,35 +333,37 @@ All limits are configurable in `fixtures/config.paper.yaml`.
 
 | Dependency | Purpose | Required |
 |---|---|---|
-| `ib-insync>=0.9.85` | TWS/IBKR connectivity | Optional (for live paper) |
-| `pydantic>=2.0` | Config and schema validation | Required |
-| `pyyaml>=6.0` | Config/universe file loading | Required |
-| `pytest>=7.0` | Testing | Development |
-| `rank-bm25>=0.2.2` | Financial memory retrieval | Optional (fallback to recency) |
-| `yfinance` | Free market data + price fallback | Optional (for standalone mode) |
-| `vibe-trading-ai` | Backtest engine + multi-agent swarms | Optional (Python 3.11 venv) |
+| `pydantic>=2.0` | Config and schema validation | ✅ Yes |
+| `pyyaml>=6.0` | Config/universe file loading | ✅ Yes |
+| `yfinance` | Free market data (standalone mode) | ✅ Yes |
+| `pytest>=7.0` | Testing | For contributors |
+| `ib-insync>=0.9.85` | TWS/IBKR read-only holdings query | ❌ Optional — only for IBKR users |
+| `rank-bm25>=0.2.2` | Financial memory retrieval | ❌ Optional — falls back to recency |
+| `vibe-trading-ai` | Backtest engine + multi-agent swarms | ❌ Optional — Python 3.11 venv |
+
+**Core install (works for everyone):**
+```bash
+pip install pydantic pyyaml yfinance
+```
 
 ---
 
 ## Project Status
 
-This system is a **production-style paper-trading decision support system**. It is not financial advice. All trading is paper-only and requires human approval at every step.
+This system is an **open-source investment research platform**. It is not financial advice. All trading features are paper-only and require human approval at every step.
 
 - ✅ Multi-agent debate research pipeline
-- ✅ 4-layer signal orchestration
-- ✅ Hard risk engine with effective exposure accounting
-- ✅ Human approval gate with replay protection
-- ✅ IBKR paper adapter with stub fallback
-- ✅ Standalone analysis (no TWS needed)
-- ✅ Experiential learning memory (BM25)
-- ✅ Qlib ML model integration (optional)
-- ✅ Polymarket geopolitical sentiment
-- ✅ Correlation-adjusted risk management
-- ✅ 3-persona risk debate
+- ✅ 5-strategy technical ensemble (Trend, Momentum, Mean Reversion, Volatility, Stat Arb)
+- ✅ 4-layer signal orchestration (Macro → Sector → Superinvestor → Decision)
+- ✅ Geopolitical sentiment from Polymarket prediction markets
+- ✅ Multi-DCF valuation (5 methodologies)
+- ✅ BM25 experiential memory (learns from past trade outcomes)
+- ✅ Narrative lifecycle phase detection
 - ✅ 13F smart money tracker (Situational Awareness LP seeded)
-- ✅ Read-only IBKR holdings query (live TWS connection)
+- ✅ Risk engine with configurable hard limits
 - ✅ Vibe-Trading backtest integration (7 engines, 29 swarms)
-- ✅ Narrative context framework (Situational Awareness + Chamath Corollary)
+- ✅ Read-only IBKR holdings query (optional, TWS required)
+- ✅ IBKR paper trading adapter (optional, TWS required)
 - ✅ Japanese chemical/materials analysis (Tokyo Stock Exchange)
 - ✅ Comprehensive test suite
 - ❌ Autonomous live trading (intentionally blocked)
@@ -373,6 +382,7 @@ This system is a **production-style paper-trading decision support system**. It 
 
 ## ⚠️ Disclaimers
 
-- **Paper trading only.** This system has a hard fail-closed lock preventing live trading.
-- **Not financial advice.** This is an experimental research tool.
+- **Not financial advice.** This is an experimental research tool. Nothing in this repository constitutes financial advice, investment recommendations, or solicitation to trade.
 - **No warranty.** Use at your own risk. Past performance does not guarantee future results.
+- **IBKR paper trading only.** The IBKR execution path has a hard fail-closed lock preventing live trading. If you connect this to a broker, use paper accounts only.
+- **Data delays.** yfinance provides delayed (~15min) market data. For real-time data, use IBKR TWS with appropriate subscriptions.
