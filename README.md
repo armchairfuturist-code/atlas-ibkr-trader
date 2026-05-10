@@ -73,6 +73,7 @@ Every stage produces typed, audit-logged artifacts. The system never trades auto
 | **Paper-Only Lock** | Hard fail-closed: live mode blocked at the config level |
 | **13F Smart Money Tracker** | Compare system signals against any fund's SEC filings |
 | **Vibe-Trading Integration** | Backtest recommendations, export to TradingView/Pine Script |
+| **Freqtrade Optimization** | ML-driven parameter optimization via genetic algorithms |
 | **Portfolio Holdings Query** | Read-only TWS connection to fetch actual positions with P&L |
 | **Autoresearch Loop** | Scorecard → policy update → replay evaluation → keep/revert |
 
@@ -207,6 +208,7 @@ atlas-ibkr-trader/
 │   ├── no_trade_controller.py   # Stale data → no-trade
 │   ├── track_13f.py             # 13F smart money tracker (Aschenbrenner seeded)
 │   ├── vibe_bridge.py           # Vibe-Trading backtest + swarm + export bridge
+│   ├── freq_bridge.py           # Freqtrade hyperopt + backtest integration
 │   └── holdings_query.py        # Read-only IBKR positions/orders query
 │
 ├── configs/layers/              # Layer configuration YAMLs
@@ -311,6 +313,41 @@ python -m app.track_13f --report
 
 Compares our system's signals against SEC 13F filings from smart money managers. Seeded with Situational Awareness LP (Leopold Aschenbrenner, $5.5B AUM, +28.9% return). Extensible to any SEC filer.
 
+### 9. Optimize Strategy Parameters (Freqtrade Integration)
+```bash
+# Install freqtrade
+pip install freqtrade
+
+# Optimize entry/exit parameters for any ticker using genetic algorithms
+python -m app.freq_bridge hyperopt --ticker TLN --epochs 100
+
+# Run backtest with optimized parameters
+python -m app.freq_bridge backtest --ticker TLN
+
+# Batch optimize all receiver-company picks
+python -m app.freq_bridge optimize-all
+```
+
+Uses [freqtrade](https://github.com/freqtrade/freqtrade)'s hyperopt engine (genetic algorithm parameter optimization) to find optimal entry/exit thresholds for each ticker. Strategies are auto-generated based on our narrative lifecycle phase (pre-discovery, discovery, priced-in).
+
+---
+
+## Web UI — Scoping
+
+A Dash-based web UI is designed but not yet built. Planned features:
+
+| Feature | Description |
+|---|---|
+| **Portfolio Dashboard** | Live position tracking, P&L, sector exposure heatmap |
+| **Signal Monitor** | Real-time BUY/SELL/HOLD signals with narrative phase overlay |
+| **13F Comparison** | Visual comparison of our picks vs smart money holdings |
+| **Backtest Viewer** | Equity curves, strategy performance metrics |
+| **Limit Order Planner** | RSI-based limit price calculator with technical levels |
+
+**Tech stack:** Dash + Plotly + Bootstrap (Python only, no JavaScript)
+
+**Status:** Design complete, implementation pending. Contributions welcome.
+
 ---
 
 ## Risk Controls
@@ -340,6 +377,7 @@ All limits are configurable in `fixtures/config.paper.yaml`.
 | `ib-insync>=0.9.85` | TWS/IBKR read-only holdings query | ❌ Optional — only for IBKR users |
 | `rank-bm25>=0.2.2` | Financial memory retrieval | ❌ Optional — falls back to recency |
 | `vibe-trading-ai` | Backtest engine + multi-agent swarms | ❌ Optional — Python 3.11 venv |
+| `freqtrade` | Genetic algorithm parameter optimization | ❌ Optional — `pip install freqtrade` |
 
 **Core install (works for everyone):**
 ```bash
@@ -362,6 +400,7 @@ This system is an **open-source investment research platform**. It is not financ
 - ✅ 13F smart money tracker (Situational Awareness LP seeded)
 - ✅ Risk engine with configurable hard limits
 - ✅ Vibe-Trading backtest integration (7 engines, 29 swarms)
+- ✅ Freqtrade hyperopt integration (genetic algorithm optimization)
 - ✅ Read-only IBKR holdings query (optional, TWS required)
 - ✅ IBKR paper trading adapter (optional, TWS required)
 - ✅ Japanese chemical/materials analysis (Tokyo Stock Exchange)
@@ -377,6 +416,7 @@ This system is an **open-source investment research platform**. It is not financ
 - [TradingAgents](https://github.com/kairi003/TradingAgents) — Multi-agent debate, memory, risk personas
 - [ai-hedge-fund](https://github.com/virattt/ai-hedge-fund) — Technical ensemble, risk management, valuation
 - [QuantAgent](https://github.com/QuantAgent/QuantAgent) — Technical indicators with SHORT signals
+- [freqtrade](https://github.com/freqtrade/freqtrade) — Genetic algorithm hyperopt engine
 
 ---
 
