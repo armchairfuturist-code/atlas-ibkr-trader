@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import sys
+import msvcrt
 from datetime import datetime
 from typing import Optional
 
@@ -23,25 +24,47 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app.agents.debate_orchestrator import DebateOrchestrator
 from app.memory.financial_memory import FinancialSituationMemory
 from app.memory.reflection import reflect_and_remember, get_memory
+from app.schemas import SignalDirection, SignalRating
+
+
+# Memory file path — overridable via the ATLAS_MEMORY_PATH env var.
+# Defaults to a well-known path under the project root so concurrent runs
+# share state properly rather than each defaulting to their working directory.
+_DEFAULT_MEMORY_DIR = os.path.dirname(os.path.abspath(__file__))
+MEMORY_FILE_PATH = os.getenv("ATLAS_MEMORY_PATH") or os.path.join(_DEFAULT_MEMORY_DIR, "memory.json")
+
+
+def _lock_file(f):
+    """Acquire an exclusive lock on an open file. Blocks until acquired."""
+    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+
+
+def _unlock_file(f):
+    """Release a lock on an open file."""
+    msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
 
 
 def load_memory() -> FinancialSituationMemory:
     """Load persistent memory from disk."""
     mem = FinancialSituationMemory()
-    mem_file = os.path.join(os.path.dirname(__file__), "memory.json")
+    mem_file = MEMORY_FILE_PATH
 
     if os.path.exists(mem_file):
         try:
             with open(mem_file) as f:
-                data = json.load(f)
-                # Re-populate memory
-                for entry in data.get("entries", []):
-                    mem.add_memory(
-                        situation=entry["situation"],
-                        outcome=entry["outcome"],
-                        lesson=entry["lesson"],
-                        tags=entry.get("tags", []),
-                    )
+                _lock_file(f)
+                try:
+                    data = json.load(f)
+                    # Re-populate memory
+                    for entry in data.get("entries", []):
+                        mem.add_memory(
+                            situation=entry["situation"],
+                            outcome=entry["outcome"],
+                            lesson=entry["lesson"],
+                            tags=entry.get("tags", []),
+                        )
+                finally:
+                    _unlock_file(f)
             print(f"Loaded {len(mem)} memories from disk")
         except Exception as e:
             print(f"Warning: Could not load memory: {e}")
@@ -51,7 +74,7 @@ def load_memory() -> FinancialSituationMemory:
 
 def save_memory(mem: FinancialSituationMemory):
     """Save memory to disk."""
-    mem_file = os.path.join(os.path.dirname(__file__), "memory.json")
+    mem_file = MEMORY_FILE_PATH
 
     try:
         entries = []
@@ -67,11 +90,15 @@ def save_memory(mem: FinancialSituationMemory):
             )
 
         with open(mem_file, "w") as f:
-            json.dump(
-                {"entries": entries, "saved_at": datetime.now().isoformat()},
-                f,
-                indent=2,
-            )
+            _lock_file(f)
+            try:
+                json.dump(
+                    {"entries": entries, "saved_at": datetime.now().isoformat()},
+                    f,
+                    indent=2,
+                )
+            finally:
+                _unlock_file(f)
 
         print(f"Saved {len(entries)} memories to disk")
     except Exception as e:
@@ -369,13 +396,28 @@ def log_trade(
     holding_days: int,
     notes: str = "",
 ):
-    """Manually log a trade outcome for learning."""
-    from app.schemas import SignalDirection
+    """Manually log a trade outcome for learning.
+
+    Validates direction and rating against enum members before storing.
+    """
+    direction_upper = direction.upper()
+    rating_upper = rating.upper()
+
+    # Validate against enum members
+    valid_directions = {e.value for e in SignalDirection}
+    if direction_upper not in valid_directions:
+        print(f"Error: Invalid direction '{direction}'. Must be one of: {', '.join(sorted(valid_directions))}")
+        return
+
+    valid_ratings = {e.value for e in SignalRating}
+    if rating_upper not in valid_ratings:
+        print(f"Error: Invalid rating '{rating}'. Must be one of: {', '.join(sorted(valid_ratings))}")
+        return
 
     trade_result = {
         "ticker": ticker,
-        "direction": direction,
-        "rating": rating,
+        "direction": direction_upper,
+        "rating": rating_upper,
         "conviction": conviction,
         "macro_regime": "UNKNOWN",  # Would need market context
         "sector": "UNKNOWN",
@@ -392,7 +434,7 @@ def log_trade(
         mem = get_memory()
         # The memory was already updated by reflect_and_remember
         save_memory(mem)
-        print(f"Logged trade: {ticker} {direction} {pnl_pct:+.2f}%")
+        print(f"Logged trade: {ticker} {direction_upper} {pnl_pct:+.2f}%")
     else:
         print("Failed to log trade")
 

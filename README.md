@@ -9,8 +9,11 @@ An end-to-end research-to-order pipeline inspired by the ATLAS autoresearch arch
 ## Quick Start
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
+# Install runtime dependencies
+pip install -e .
+
+# Install with dev dependencies (includes pytest)
+pip install -e ".[dev]"
 
 # Run standalone analysis (no IBKR needed)
 python analysis_standalone.py --ticker SPY
@@ -207,6 +210,13 @@ python analysis_standalone.py --memory           # Show learned experiences
 
 Uses **yfinance** for free, delayed (~15min) market data. No TWS or IB Gateway needed. Perfect for research and signal generation.
 
+Trade memory (`memory.json`) uses file locking for safe concurrent access. The path can be customized via `ATLAS_MEMORY_PATH` env var:
+```bash
+ATLAS_MEMORY_PATH=/path/to/custom/memory.json python analysis_standalone.py --ticker SPY
+```
+
+Input validation is enforced on the `--log-trade` flag — `direction` and `rating` are checked against `SignalDirection` (`LONG`/`SHORT`/`NEUTRAL`) and `SignalRating` (`BUY`/`OVERWEIGHT`/`HOLD`/`UNDERWEIGHT`/`SELL`) enums before storing.
+
 ### 2. Daily Pipeline (Stub Mode — No TWS)
 ```bash
 python run_daily.py
@@ -265,11 +275,11 @@ All limits are configurable in `fixtures/config.paper.yaml`.
 
 | Dependency | Purpose | Required |
 |---|---|---|
-| `ib-insync>=0.9.85` | TWS/IBKR connectivity | Optional (for live paper) |
-| `pydantic>=2.0` | Config and schema validation | Required |
-| `pyyaml>=6.0` | Config/universe file loading | Required |
-| `pytest>=7.0` | Testing | Development |
-| `rank-bm25>=0.2.2` | Financial memory retrieval | Optional (fallback to recency) |
+| `ib-insync>=0.9.85,<1.0` | TWS/IBKR connectivity | Optional (for live paper) |
+| `pydantic>=2.0,<3.0` | Config and schema validation | Required |
+| `pyyaml>=6.0,<7.0` | Config/universe file loading | Required |
+| `pytest>=7.0,<9.0` | Testing | Development (`pip install -e ".[dev]"`) |
+| `rank-bm25>=0.2.2,<1.0` | Financial memory retrieval | Optional (fallback to recency) |
 | `yfinance` | Free market data | Optional (for standalone mode) |
 
 ---

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from app.config import Config, load_config_from_file
 from app.universe import load_universe
-from app.signal_orchestrator import SignalOrchestrator, MacroContext
+from app.signal_orchestrator import SignalOrchestrator
 from app.risk_engine import RiskEngine, PortfolioState
 from app.intent_translator import IntentTranslator
 from app.approval_gate import ApprovalGate

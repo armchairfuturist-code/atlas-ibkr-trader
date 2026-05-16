@@ -170,6 +170,7 @@ class IBKRDataProvider(DataProvider):
         self.client_id = client_id
         self._connected = False
         self._cache: dict[str, Quote] = {}
+        self._rng = random.Random()
     
     def connect(self) -> tuple[bool, Optional[str]]:
         """Connect - mock with realistic data."""
@@ -191,25 +192,26 @@ class IBKRDataProvider(DataProvider):
         base_price = self.BASE_PRICES.get(ticker, 100.0)
         
         # Add variation based on current time (changes every second)
+        # Use a local Random seeded by time+ticker so each call produces
+        # different values without poisoning the global RNG.
         now = datetime.now()
-        seed = now.hour * 3600 + now.minute * 60 + now.second + hash(ticker) % 1000
-        random.seed(seed)
-        
-        variation = random.uniform(-0.015, 0.015)  # +/- 1.5%
+        self._rng.seed(now.hour * 3600 + now.minute * 60 + now.second + hash(ticker) % 1000)
+
+        variation = self._rng.uniform(-0.015, 0.015)  # +/- 1.5%
         price = base_price * (1 + variation)
-        
+
         # Create realistic bid/ask spread
-        spread_pct = random.uniform(0.0005, 0.0015)  # 0.05% to 0.15%
+        spread_pct = self._rng.uniform(0.0005, 0.0015)  # 0.05% to 0.15%
         spread = price * spread_pct
         bid = round(price - spread/2, 2)
         ask = round(price + spread/2, 2)
-        
+
         quote = Quote(
             ticker=ticker,
             bid=bid,
             ask=ask,
             last=round(price, 2),
-            volume=random.randint(5000000, 50000000),
+            volume=self._rng.randint(5000000, 50000000),
             timestamp=datetime.now()
         )
         

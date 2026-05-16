@@ -57,6 +57,7 @@ class FinancialSituationMemory:
         self.entries: list[MemoryEntry] = []
         self.bm25: Optional["BM25Okapi"] = None
         self._tokenized_corpus: list[list[str]] = []
+        self._dirty: bool = False
 
     def add_memory(
         self, situation: str, outcome: str, lesson: str, tags: list[str] = None
@@ -78,7 +79,7 @@ class FinancialSituationMemory:
         )
 
         self.entries.append(entry)
-        self._rebuild_index()
+        self._dirty = True
 
         logger.debug(f"Added memory: {situation[:50]}... (total: {len(self.entries)})")
 
@@ -99,6 +100,11 @@ class FinancialSituationMemory:
         if BM25Okapi is None:
             # Fallback: return most recent entries
             return self.entries[-n:]
+
+        # Rebuild index lazily if new entries were added since last query
+        if self._dirty:
+            self._rebuild_index()
+            self._dirty = False
 
         # Tokenize query
         query_tokens = self._tokenize(current_situation)
@@ -151,6 +157,7 @@ class FinancialSituationMemory:
         self.entries = []
         self._tokenized_corpus = []
         self.bm25 = None
+        self._dirty = False
         logger.info("Memory cleared")
 
     def _tokenize(self, text: str) -> list[str]:

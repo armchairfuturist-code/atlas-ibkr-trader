@@ -2,13 +2,17 @@
 name = "atlas-ibkr-trader"
 version = "0.1.0"
 description = "IBKR Paper ETF/Sector Margin Trading Planner"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 dependencies = [
-    "ib-insync>=0.9.85",
-    "pydantic>=2.0",
-    "pyyaml>=6.0",
-    "pytest>=7.0",
-    "rank-bm25>=0.2.2",
+    "ib-insync>=0.9.85,<1.0",
+    "pydantic>=2.0,<3.0",
+    "pyyaml>=6.0,<7.0",
+    "rank-bm25>=0.2.2,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0,<9.0",
 ]
 
 [project.scripts]
