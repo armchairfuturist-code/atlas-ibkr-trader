@@ -1,0 +1,36 @@
+# Layer 2: Sector desks - 7 sector desks with ETF preference
+version: v1
+sectors:
+  technology:
+    name: Technology
+    etf: XLK
+    weight: 1.0
+  healthcare:
+    name: Healthcare
+    etf: XLV
+    weight: 0.9
+  financials:
+    name: Financials
+    etf: XLF
+    weight: 0.85
+  consumer_discretionary:
+    name: Consumer Discretionary
+    etf: XLY
+    weight: 0.8
+  industrials:
+    name: Industrials
+    etf: XLI
+    weight: 0.75
+  energy:
+    name: Energy
+    etf: XLE
+    weight: 0.7
+  materials:
+    name: Materials
+    etf: XLB
+    weight: 0.65
+# Sector scoring rules
+scoring:
+  etf_preference: true  # Prefer ETFs over single stocks
+  min_confidence: 0.5
+  max_positions: 3

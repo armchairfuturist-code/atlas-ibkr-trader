@@ -1,0 +1,37 @@
+# Layer 4: Decision agents - CRO, Alpha Discovery, Autonomous Execution, CIO
+version: v1
+agents:
+  cro:
+    name: Chief Risk Officer
+    role: Risk review and position sizing
+    weight: 1.0
+    parameters:
+      max_position_pct: 12.5
+      max_sector_pct: 30
+      max_leverage: 1.25
+      daily_stop_pct: 2.5
+  alpha_discovery:
+    name: Alpha Discovery
+    role: Signal generation and conviction scoring
+    weight: 0.9
+    parameters:
+      min_conviction: 60
+      signal_horizon_days: 5
+  autonomous_execution:
+    name: Autonomous Execution
+    role: Order construction and timing
+    weight: 0.85
+    parameters:
+      algo: TWAP
+      max_slippage_bps: 10
+  cio:
+    name: Chief Investment Officer
+    role: Final proposal aggregation
+    weight: 1.0
+    parameters:
+      min_layers_agreement: 3
+      final_approval_required: true
+# Decision aggregation rules
+aggregation:
+  proposal_threshold: 0.6
+  confidence_floor: 0.5

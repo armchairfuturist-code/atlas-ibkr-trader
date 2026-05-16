@@ -1,0 +1,18 @@
+
+============================================================
+ANALYSIS: QQQ
+============================================================
+
+Price: $711.04
+P/E: 34.685524 | Dividend Yield: 42.00%
+1M Return: +11.56%
+3M Return: +18.41% | Volatility: 1.2%
+
+--- Multi-Agent Debate ---
+Rating: OVERWEIGHT
+Conviction: 58
+Bull/Bear: 70%/30%
+Thesis: OVERWEIGHT rating based on: Bull case: Price momentum positive over lookback period; Above-average trading volume suggests institutional interest
+
+--- Similar Past Experiences ---
+  No prior experiences on record

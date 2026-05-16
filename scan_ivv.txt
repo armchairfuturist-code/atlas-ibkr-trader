@@ -1,0 +1,18 @@
+
+============================================================
+ANALYSIS: IVV
+============================================================
+
+Price: $744.22
+P/E: 27.810999 | Dividend Yield: 112.00%
+1M Return: +5.83%
+3M Return: +8.81% | Volatility: 0.9%
+
+--- Multi-Agent Debate ---
+Rating: HOLD
+Conviction: 59
+Bull/Bear: 50%/50%
+Thesis: HOLD rating based on: Bull case: Price momentum positive over lookback period Bear case: Below-average trading volume - lack of conviction
+
+--- Similar Past Experiences ---
+  No prior experiences on record

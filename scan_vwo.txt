@@ -1,0 +1,18 @@
+
+============================================================
+ANALYSIS: VWO
+============================================================
+
+Price: $58.51
+P/E: 17.057333 | Dividend Yield: 248.00%
+1M Return: +0.72%
+3M Return: +1.25% | Volatility: 1.4%
+
+--- Multi-Agent Debate ---
+Rating: HOLD
+Conviction: 64
+Bull/Bear: 50%/50%
+Thesis: HOLD rating based on: Bull case: Attractive P/E ratio of 17.1 Bear case: Price momentum negative over lookback period; Below-average trading volume - lack of conviction
+
+--- Similar Past Experiences ---
+  No prior experiences on record

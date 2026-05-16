@@ -1,0 +1,16 @@
+========================================================================
+  ATLAS SIGNAL SCAN — Full 4-Layer Pipeline
+========================================================================
+
+Scanned 3 tickers across 4 layers
+
+Ticker   Rating         Conviction   Direction  Size%    Filter/Source
+------------------------------------------------------------------------
+XLK      BUY            100          LONG       12.5     buffett_style
+XLK      BUY            100          LONG       12.5     lynch_style
+XLK      BUY            100          LONG       12.5     simons_style
+
+Macro Regime Summary:
+  RISK_ON=5  RISK_OFF=2  NEUTRAL=3  (based on 10 macro agents)
+
+Done.

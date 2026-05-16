@@ -1,0 +1,15 @@
+INFO:app.layers.layer1_macro:MacroLayer: 5 risk-on, 2 risk-off, 3 neutral
+INFO:app.signal_orchestrator:Layer 1 (Macro): 10 agent outputs
+INFO:app.signal_orchestrator:Layer 2 (Sector): 7 sectors ranked
+INFO:app.signal_orchestrator:Layer 3 (Superinvestors): 28 filter outputs
+INFO:app.signal_orchestrator:Layer 4 (Decision): 3 proposals
+Loaded 0 tickers from universe
+
+Generated 3 signals
+Ticker   Rating         Conviction   Direction  Size%    Source
+------------------------------------------------------------------------
+XLK      BUY            100          LONG       12.5     buffett_style
+XLK      BUY            100          LONG       12.5     lynch_style
+XLK      BUY            100          LONG       12.5     simons_style
+
+Done.

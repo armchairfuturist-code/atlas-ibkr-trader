@@ -1,0 +1,18 @@
+
+============================================================
+ANALYSIS: JEPI
+============================================================
+
+Price: $55.96
+P/E: 26.65098 | Dividend Yield: 829.00%
+1M Return: -2.10%
+3M Return: -3.45% | Volatility: 0.6%
+
+--- Multi-Agent Debate ---
+Rating: UNDERWEIGHT
+Conviction: 58
+Bull/Bear: 30%/70%
+Thesis: UNDERWEIGHT rating based on: Bear case: Price momentum negative over lookback period; Below-average trading volume - lack of conviction
+
+--- Similar Past Experiences ---
+  No prior experiences on record

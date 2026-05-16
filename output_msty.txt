@@ -1,0 +1,18 @@
+
+============================================================
+ANALYSIS: MSTY
+============================================================
+
+Price: $24.87
+P/E: N/A | Dividend Yield: 23755.00%
+1M Return: +18.16%
+3M Return: +32.86% | Volatility: 3.5%
+
+--- Multi-Agent Debate ---
+Rating: OVERWEIGHT
+Conviction: 67
+Bull/Bear: 70%/30%
+Thesis: OVERWEIGHT rating based on: Bull case: Price momentum positive over lookback period; Attractive P/E ratio of 20.0 Bear case: Below-average trading volume - lack of conviction
+
+--- Similar Past Experiences ---
+  No prior experiences on record

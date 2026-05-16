@@ -420,6 +420,62 @@ def show_memory():
         print(f"  → {m.lesson[:80]}...")
 
 
+def _run_signal_scan():
+    """Run the full 4-layer ATLAS signal pipeline across the ETF universe."""
+    import yaml
+
+    from app.signal_orchestrator import SignalOrchestrator
+    from app.data.market_data import MarketDataProvider
+
+    print("=" * 72)
+    print("  ATLAS SIGNAL SCAN — Full 4-Layer Pipeline")
+    print("=" * 72)
+
+    # Load config
+    config_path = os.path.join(os.path.dirname(__file__), "fixtures", "config.paper.yaml")
+    import yaml
+    with open(config_path) as f:
+        config = yaml.safe_load(f)
+
+    # Load universe
+    universe_path = os.path.join(os.path.dirname(__file__), "fixtures", "universe.valid.yaml")
+    with open(universe_path) as f:
+        universe = yaml.safe_load(f)
+
+    # Run the 4-layer pipeline
+    orchestrator = SignalOrchestrator(config)
+    signals = orchestrator.generate_signals(tickers=universe.get("all", []))
+
+    print(f"\nScanned {len(signals)} tickers across 4 layers")
+    print()
+
+    # Print results table
+    print(f"{'Ticker':<8} {'Rating':<14} {'Conviction':<12} {'Direction':<10} {'Size%':<8} {'Filter/Source'}")
+    print("-" * 72)
+    for s in signals:
+        ticker = s.get("ticker", "?")
+        rating = s.get("rating", "?")
+        conv = s.get("conviction", 0)
+        direction = s.get("direction", "?")
+        size_pct = s.get("size_pct", 0)
+        source = s.get("source_filter", "")
+        print(f"{ticker:<8} {rating:<14} {conv:<12} {direction:<10} {size_pct:<8} {source}")
+
+    print()
+    print("Macro Regime Summary:")
+    # Layer 1 already ran; show the macro regime from the orchestator
+    if hasattr(orchestrator, "macro_layer") and hasattr(orchestrator.macro_layer, "evaluate"):
+        macro_out = orchestrator.macro_layer.evaluate()
+        risk_on = sum(1 for o in macro_out if o.regime_vote == "RISK_ON")
+        risk_off = sum(1 for o in macro_out if o.regime_vote == "RISK_OFF")
+        neutral = sum(1 for o in macro_out if o.regime_vote == "NEUTRAL")
+        print(f"  RISK_ON={risk_on}  RISK_OFF={risk_off}  NEUTRAL={neutral}  "
+              f"(based on {len(macro_out)} macro agents)")
+
+    print()
+    print("Done.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Trading Analysis (No TWS Required)")
     parser.add_argument("--ticker", help="Ticker to analyze")
@@ -452,6 +508,8 @@ def main():
         analyze_ticker(args.ticker.upper())
     elif args.memory:
         show_memory()
+    elif args.signal:
+        _run_signal_scan()
     elif args.log_trade:
         ticker, direction, rating, conviction, pnl, days = args.log_trade
         log_trade(

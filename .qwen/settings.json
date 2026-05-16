@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git worktree *)",
+      "Bash(type *)",
+      "Bash(findstr *)",
+      "Bash(python *)",
+      "Bash(where *)",
+      "Bash(winget *)",
+      "Bash(py *)",
+      "Bash(.vibe-venv\\scripts\\python *)",
+      "Bash(netstat *)",
+      "Bash(tasklist *)"
+    ]
+  },
+  "$version": 4
+}

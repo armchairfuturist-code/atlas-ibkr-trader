@@ -1,0 +1,62 @@
+# Layer 1: Macro agents - 10 macro-level agents for regime detection
+version: v1
+agents:
+  central_bank:
+    name: Central Bank Policy
+    weight: 1.0
+    features:
+      - fed_bias
+      - rate_path
+  inflation:
+    name: Inflation Dynamics
+    weight: 0.9
+    features:
+      - cpi_trend
+      - wage_growth
+  growth:
+    name: Economic Growth
+    weight: 0.85
+    features:
+      - gdp_growth
+      - pmi_trend
+  employment:
+    name: Labor Market
+    weight: 0.8
+    features:
+      - nfp_change
+      - unemployment
+  sentiment:
+    name: Market Sentiment
+    weight: 0.75
+    features:
+      - vix_level
+      - put_call_ratio
+  liquidity:
+    name: Global Liquidity
+    weight: 0.7
+    features:
+      - reserve_changes
+      - repo_rates
+  earnings:
+    name: Earnings Season
+    weight: 0.65
+    features:
+      - esp_trend
+      - guidance
+  technical:
+    name: Technical Regime
+    weight: 0.6
+    features:
+      - trend_signal
+      - momentum
+  volatility:
+    name: Volatility Regime
+    weight: 0.55
+    features:
+      - iv_rank
+      - vol_smile
+  macro_macro:
+    name: Macro Momentum
+    weight: 0.5
+    features:
+      - leading_indicators

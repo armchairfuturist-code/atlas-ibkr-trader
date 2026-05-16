@@ -1,0 +1,18 @@
+
+============================================================
+ANALYSIS: SCHD
+============================================================
+
+Price: $31.72
+P/E: 18.816885 | Dividend Yield: 329.00%
+1M Return: +3.49%
+3M Return: +1.81% | Volatility: 0.6%
+
+--- Multi-Agent Debate ---
+Rating: BUY
+Conviction: 62
+Bull/Bear: 70%/30%
+Thesis: BUY rating based on: Bull case: Price momentum positive over lookback period; Attractive P/E ratio of 18.8
+
+--- Similar Past Experiences ---
+  No prior experiences on record
